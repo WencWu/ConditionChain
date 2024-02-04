@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "cchain"
+version = "0.1.0"
+description = "A lightweight, simple and easy-to-use LLM application development framework, a replacement for Langchain."
+authors = ["WencWu <wuwencheng97@gmail.com>"]
+license = "Apache 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
