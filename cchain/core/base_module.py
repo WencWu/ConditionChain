@@ -8,11 +8,12 @@ from typing import Optional, Tuple, Union, Sequence
 
 @dataclass
 class Module:
-
+    """这是一个模块基类，所有条件链中的模块都继承于它"""
     name: Optional[str] = None
     input_names: Optional[Union[Tuple[str, ...], str]] = None
     output_names: Optional[Union[Tuple[str, ...], str]] = None
     timing: bool = False
+    lazy_initialized: bool = False
 
     def __post_init__(self):
         self.internal_input_names = list(key for key in inspect.signature(
@@ -21,6 +22,9 @@ class Module:
             self.name = self.__class__.__name__
 
     def __call__(self, context: dict):
+        if not self.lazy_initialized:
+            self.lazy_init()
+            self.lazy_initialized = True
         input_args = self.get_input_args(context)
         if self.timing:
             t1 = time.time()
@@ -36,6 +40,9 @@ class Module:
     def invoke(self, **kwargs):
         pass
 
+    def lazy_init(self):
+        pass
+
     @classmethod
     def new(cls, **kwargs):
         # 创建一个装饰器，用于定义新的 node
@@ -49,8 +56,8 @@ class Module:
                     kwargs['name'] = obj.__name__
                 module = cls(**kwargs)
                 module.invoke = obj
-                module.internal_input_names = list(k for k in inspect.signature(
-                    obj).parameters.keys())
+                module.internal_input_names = list(
+                    key for key in inspect.signature(obj).parameters.keys() if key != 'self')
                 return module
             else:
                 raise ValueError(
@@ -98,9 +105,6 @@ class Module:
 if __name__ == '__main__':
 
     class NewModule(Module):
-        def __post_init__(self):
-            super().__post_init__()
-            print("post_init")
 
         def invoke(self, **kwargs):
             print("hello world")

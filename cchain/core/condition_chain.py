@@ -29,6 +29,8 @@ class ConditionChain:
                     current_module_name = self.state_transition[current_module_name][1]
             else:
                 context = current_module(context)
+                if current_module_name not in self.state_transition:
+                    break
                 current_module_name = self.state_transition[current_module_name]
         if self.collect_keys is None:
             return context
@@ -49,7 +51,7 @@ class ConditionChain:
         if isinstance(modules, Sequence):
             all_modules = []
             for i, module in enumerate(modules):
-                if i == 0:
+                if i == 0 and level != -1:
                     all_modules.append((module, level))
                 else:
                     all_modules.extend(self.get_modules_and_tags(module, level+1))
@@ -63,6 +65,7 @@ class ConditionChain:
         start_module_name = None
         module_tags = self.get_modules_and_tags(modules)
         for i, (module, tag) in enumerate(module_tags):
+            # rename duplicate module
             if module.name not in chain:
                 chain[module.name] = module
             else:
@@ -73,6 +76,7 @@ class ConditionChain:
                     module_name = f'{module.name}_{index}'
                 module.name = module_name
                 chain[module.name] = module
+            # add state transition
             if i == 0:
                 start_module_name = module.name
                 continue
